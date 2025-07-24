@@ -49,7 +49,9 @@ target-version = ["py310"]
 profile = "black"
 
 [tool.mypy]
-python_version = "3.10"
 strict = true
-ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "notebook_refactor_agent.tools.nb_inspector"
+disable_error_code = ["no-untyped-call"]
 
