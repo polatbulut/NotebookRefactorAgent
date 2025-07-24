@@ -7,12 +7,6 @@ import nbformat
 
 
 def summarize_notebook(path: str | Path) -> dict[str, Any]:
-    """
-    Return a simple, type-safe summary of a notebook:
-    - cell types
-    - first 3 lines of source
-    - line counts
-    """
     nb: Any = cast(Any, nbformat.read(str(path), as_version=4))
     summary: dict[str, Any] = {"cells": []}
     for i, cell in enumerate(nb.cells):
