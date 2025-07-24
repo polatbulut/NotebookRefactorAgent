@@ -16,7 +16,6 @@ def inspect_cmd(input_nb: Path) -> None:
     typer.echo(summary)
 
 
-# Register after definition to avoid mypy's "untyped decorator" error
 app.command()(inspect_cmd)
 
 if __name__ == "__main__":
