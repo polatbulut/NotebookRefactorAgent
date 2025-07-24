@@ -13,7 +13,8 @@ def summarize_notebook(path: str | Path) -> dict[str, Any]:
     - first 3 lines of source
     - line counts
     """
-    nb = nbformat.read(str(path), as_version=4)
+    # nbformat doesn't ship type hints → mark as Any to satisfy mypy.
+    nb: Any = nbformat.read(str(path), as_version=4)
     summary: dict[str, Any] = {"cells": []}
     for i, cell in enumerate(nb.cells):
         ctype = cell.get("cell_type")
