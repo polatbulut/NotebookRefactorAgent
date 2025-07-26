@@ -1,6 +1,8 @@
+README.md
 pyproject.toml
 src/notebook_refactor_agent/__init__.py
 src/notebook_refactor_agent/cli.py
+src/notebook_refactor_agent/py.typed
 src/notebook_refactor_agent.egg-info/PKG-INFO
 src/notebook_refactor_agent.egg-info/SOURCES.txt
 src/notebook_refactor_agent.egg-info/dependency_links.txt
@@ -8,6 +10,12 @@ src/notebook_refactor_agent.egg-info/requires.txt
 src/notebook_refactor_agent.egg-info/top_level.txt
 src/notebook_refactor_agent/agent/__init__.py
 src/notebook_refactor_agent/agent/graph.py
+src/notebook_refactor_agent/agent/nodes/__init__.py
+src/notebook_refactor_agent/agent/nodes/critic.py
+src/notebook_refactor_agent/agent/nodes/planner.py
+src/notebook_refactor_agent/agent/nodes/refactor.py
+src/notebook_refactor_agent/agent/nodes/writer_node.py
+src/notebook_refactor_agent/eval/run.py
 src/notebook_refactor_agent/tools/__init__.py
 src/notebook_refactor_agent/tools/nb_inspector.py
 src/notebook_refactor_agent/tools/quality.py

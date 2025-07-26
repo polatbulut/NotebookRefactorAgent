@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import argparse
 import ast
 import csv
@@ -8,14 +9,14 @@ import sys
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 import yaml
 
 from ..agent.graph import build_graph
 
 
-def _run(cmd: List[str], cwd: Path | None = None) -> Tuple[int, str, str]:
+def _run(cmd: list[str], cwd: Path | None = None) -> tuple[int, str, str]:
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd, text=True)
     out, err = p.communicate()
     return p.returncode, out, err
@@ -28,7 +29,7 @@ def _count_functions(py_file: Path) -> int:
     return sum(isinstance(n, ast.FunctionDef) for n in ast.walk(tree))
 
 
-def _print_table(rows: List[Dict[str, Any]]) -> None:
+def _print_table(rows: list[dict[str, Any]]) -> None:
     headers = ["case", "pass", "secs", "pytest", "ruff", "black", "mypy", "funcs", "files"]
     widths = {h: len(h) for h in headers}
     for r in rows:
@@ -55,7 +56,7 @@ def _print_table(rows: List[Dict[str, Any]]) -> None:
         print("  ".join(vals))
 
 
-def _evaluate(accept: Dict[str, Any], metrics: Dict[str, Any]) -> bool:
+def _evaluate(accept: dict[str, Any], metrics: dict[str, Any]) -> bool:
     ok = True
     if "pytest_returncode" in accept:
         ok = ok and metrics.get("pytest_returncode", 1) == int(accept["pytest_returncode"])
@@ -75,8 +76,8 @@ def run_suite(suite_path: Path) -> int:
     ts = datetime.now().strftime("%Y%m%d-%H%M%S")
     base = Path(cfg.get("run_root", "eval_runs")) / ts
     base.mkdir(parents=True, exist_ok=True)
-    rows: List[Dict[str, Any]] = []
-    summary: Dict[str, Any] = {"run_root": str(base), "cases": []}
+    rows: list[dict[str, Any]] = []
+    summary: dict[str, Any] = {"run_root": str(base), "cases": []}
     for case in cfg.get("cases", []):
         case_id = str(case["id"])
         nb_path = Path(case["input"])
@@ -127,15 +128,39 @@ def run_suite(suite_path: Path) -> int:
     (base / "summary.json").write_text(json.dumps(summary, indent=2))
     with (base / "summary.csv").open("w", newline="") as f:
         w = csv.writer(f)
-        w.writerow(["case", "pass", "seconds", "pytest_rc", "ruff_rc", "black_rc", "mypy_rc", "function_count", "file_count"])
+        w.writerow(
+            [
+                "case",
+                "pass",
+                "seconds",
+                "pytest_rc",
+                "ruff_rc",
+                "black_rc",
+                "mypy_rc",
+                "function_count",
+                "file_count",
+            ]
+        )
         for r in rows:
-            w.writerow([r["case"], r["pass"], f'{r["secs"]:.3f}', r["pytest"], r["ruff"], r["black"], r["mypy"], r["funcs"], r["files"]])
+            w.writerow(
+                [
+                    r["case"],
+                    r["pass"],
+                    f'{r["secs"]:.3f}',
+                    r["pytest"],
+                    r["ruff"],
+                    r["black"],
+                    r["mypy"],
+                    r["funcs"],
+                    r["files"],
+                ]
+            )
     _print_table(rows)
     return 0 if all(r["pass"] for r in rows) else 1
 
 
 def main() -> None:
-    import sys
+
     p = argparse.ArgumentParser()
     p.add_argument("suite", nargs="?", default="eval/suite.yaml")
     args = p.parse_args()
