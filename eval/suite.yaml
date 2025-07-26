@@ -16,3 +16,19 @@ cases:
       black_ok: true
       mypy_ok: true
       min_functions: 1
+    - id: case3
+    input: eval/cases/case3/input.ipynb
+    acceptance:
+      pytest_returncode: 0
+      ruff_ok: true
+      black_ok: true
+      mypy_ok: true
+      min_functions: 1
+  - id: case4
+    input: eval/cases/case4/input.ipynb
+    acceptance:
+      pytest_returncode: 0
+      ruff_ok: true
+      black_ok: true
+      mypy_ok: true
+      min_functions: 1
