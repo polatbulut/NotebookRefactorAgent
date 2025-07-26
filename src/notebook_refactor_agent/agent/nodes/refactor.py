@@ -35,21 +35,20 @@ def refactor_node(state: dict[str, Any]) -> dict[str, Any]:
         cid = int(item["cell_id"])
         fn = str(item["fn_name"])
         src = str(nb.cells[cid].get("source", ""))
-        cell_body_lines = [ln for ln in src.splitlines() if not is_import_line(ln)]
-        body_lines = [f"    {ln}" for ln in cell_body_lines if ln.strip() != ""]
 
+        cell_body_lines = [ln for ln in src.splitlines() if not is_import_line(ln)]
+        body_src = "\n".join(cell_body_lines)
         assigned: list[str] = []
         try:
-            tree = ast.parse("\n".join(cell_body_lines)) if cell_body_lines else None
+            tree = ast.parse(body_src) if body_src else None
         except SyntaxError:
             tree = None
         if tree:
             for n in ast.walk(tree):
                 if isinstance(n, ast.Assign):
                     for tgt in n.targets:
-                        if isinstance(tgt, ast.Name):
-                            if tgt.id not in assigned:
-                                assigned.append(tgt.id)
+                        if isinstance(tgt, ast.Name) and tgt.id not in assigned:
+                            assigned.append(tgt.id)
                         elif isinstance(tgt, ast.Tuple):
                             for e in tgt.elts:
                                 if isinstance(e, ast.Name) and e.id not in assigned:
@@ -62,12 +61,24 @@ def refactor_node(state: dict[str, Any]) -> dict[str, Any]:
                     tgt = n.target
                     if isinstance(tgt, ast.Name) and tgt.id not in assigned:
                         assigned.append(tgt.id)
-        if assigned:
-            body_lines.append("    return " + ", ".join(assigned))
 
-        body = "\n".join(body_lines) if body_lines else "    pass"
-        lines.append(f"def {fn}():")
-        lines.append(body)
+        if len(assigned) == 0:
+            ret_annot = "None"
+        elif len(assigned) == 1:
+            ret_annot = "object"
+        else:
+            ret_annot = "tuple[" + ", ".join(["object"] * len(assigned)) + "]"
+
+        lines.append(f"def {fn}() -> {ret_annot}:")
+        body_lines = [f"    {ln}" for ln in cell_body_lines if ln.strip() != ""]
+        if len(assigned) > 0:
+            if len(assigned) == 1:
+                body_lines.append(f"    return {assigned[0]}")
+            else:
+                body_lines.append("    return " + ", ".join(assigned))
+        if not body_lines:
+            body_lines = ["    pass"]
+        lines.extend(body_lines)
         lines.append("")
 
     files = {plan["module_path"]: "\n".join(lines) + "\n"}
