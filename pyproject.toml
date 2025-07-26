@@ -54,3 +54,7 @@ strict = true
 [[tool.mypy.overrides]]
 module = "notebook_refactor_agent.agent.nodes.*"
 disable_error_code = ["no-untyped-call"]
+
+[[tool.mypy.overrides]]
+module = "notebook_refactor_agent.tools.nb_inspector"
+disable_error_code = ["no-untyped-call"]
