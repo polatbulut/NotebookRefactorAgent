@@ -1,7 +1,6 @@
 __pycache__/
 examples/
 eval_runs/
-eval/cases/
 *.pyc
 *.pyo
 *.pyd

@@ -23,4 +23,6 @@ jobs:
           mypy src
       - name: Test
         run: pytest -q --cov=src --cov-report=xml
+      - name: Evaluation
+        run: python -m notebook_refactor_agent.eval.run eval/suite.yaml
 
