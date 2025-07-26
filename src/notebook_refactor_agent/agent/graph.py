@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, TypedDict
+from typing import Any, TypedDict, cast
 
 from langgraph.graph import END, StateGraph
 
@@ -23,10 +23,10 @@ class State(TypedDict, total=False):
 
 def build_graph() -> Any:
     g = StateGraph(State)
-    g.add_node("planner", planner_node)
-    g.add_node("refactor", refactor_node)
-    g.add_node("test_writer", test_writer_node)
-    g.add_node("critic", critic_node)
+    g.add_node("planner", cast(Any, planner_node))
+    g.add_node("refactor", cast(Any, refactor_node))
+    g.add_node("test_writer", cast(Any, test_writer_node))
+    g.add_node("critic", cast(Any, critic_node))
     g.set_entry_point("planner")
     g.add_edge("planner", "refactor")
     g.add_edge("refactor", "test_writer")
