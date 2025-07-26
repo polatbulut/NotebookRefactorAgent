@@ -1,0 +1,18 @@
+run_root: eval_runs
+cases:
+  - id: case1
+    input: eval/cases/case1/input.ipynb
+    acceptance:
+      pytest_returncode: 0
+      ruff_ok: true
+      black_ok: true
+      mypy_ok: true
+      min_functions: 1
+  - id: case2
+    input: eval/cases/case2/input.ipynb
+    acceptance:
+      pytest_returncode: 0
+      ruff_ok: true
+      black_ok: true
+      mypy_ok: true
+      min_functions: 1

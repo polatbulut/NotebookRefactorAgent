@@ -17,3 +17,5 @@ test:
 run:
 \tpython -m notebook_refactor_agent.cli --help
 
+eval:
+\tpython -m notebook_refactor_agent.eval.run eval/suite.yaml
