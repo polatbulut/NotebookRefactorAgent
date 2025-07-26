@@ -13,7 +13,9 @@ from .nodes.writer_node import test_writer_node
 class State(TypedDict, total=False):
     input_nb: str
     output_dir: str
-    nb_summary: dict[str, Any]
+    mode: str
+    safe: bool
+    timeout_secs: int
     plan: dict[str, Any]
     files: dict[str, str]
     tests: dict[str, str]

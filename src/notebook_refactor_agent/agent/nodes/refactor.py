@@ -11,6 +11,7 @@ import nbformat
 def refactor_node(state: dict[str, Any]) -> dict[str, Any]:
     input_nb = state["input_nb"]
     plan = state["plan"]
+    mode = str(state.get("mode", "run-all"))
     nb: Any = cast(Any, nbformat.read(str(input_nb), as_version=4))
 
     def is_import_line(s: str) -> bool:
@@ -62,57 +63,48 @@ def refactor_node(state: dict[str, Any]) -> dict[str, Any]:
         return f"{indent}def {name}({', '.join(new_params)}) -> Any:", used_any
 
     collected_imports: list[str] = []
-    body_lines_all: list[str] = []
+    cell_bodies: list[list[str]] = []
+    needs_any = False
     for item in plan["functions"]:
         cid = int(item["cell_id"])
         src = str(nb.cells[cid].get("source", ""))
+        body_lines: list[str] = []
         for ln in src.splitlines():
             if is_import_line(ln):
                 collected_imports.append(ln.strip())
             elif ln.strip() != "":
-                body_lines_all.append(ln)
+                nln, used_any = annotate_def_line(ln)
+                if used_any:
+                    needs_any = True
+                body_lines.append(nln)
+        cell_bodies.append(body_lines)
 
-    processed_body_lines: list[str] = []
-    needs_any = False
-    for ln in body_lines_all:
-        nln, used_any = annotate_def_line(ln)
-        if used_any:
-            needs_any = True
-        processed_body_lines.append(nln)
-
-    body_src = "\n".join(processed_body_lines)
-
-    assigned: list[str] = []
-    if body_src:
+    def assigned_names(lines: list[str]) -> list[str]:
+        if not lines:
+            return []
         try:
-            tree = ast.parse(body_src)
+            tree = ast.parse("\n".join(lines))
         except SyntaxError:
-            tree = None
-        if tree:
-            for n in ast.walk(tree):
-                if isinstance(n, ast.Assign):
-                    for tgt in n.targets:
-                        if isinstance(tgt, ast.Name) and tgt.id not in assigned:
-                            assigned.append(tgt.id)
-                        elif isinstance(tgt, ast.Tuple):
-                            for e in tgt.elts:
-                                if isinstance(e, ast.Name) and e.id not in assigned:
-                                    assigned.append(e.id)
-                elif isinstance(n, ast.AnnAssign):
-                    tgt = n.target
-                    if isinstance(tgt, ast.Name) and tgt.id not in assigned:
-                        assigned.append(tgt.id)
-                elif isinstance(n, ast.AugAssign):
-                    tgt = n.target
-                    if isinstance(tgt, ast.Name) and tgt.id not in assigned:
-                        assigned.append(tgt.id)
-
-    if len(assigned) == 0:
-        ret_annot = "None"
-    elif len(assigned) == 1:
-        ret_annot = "object"
-    else:
-        ret_annot = "tuple[" + ", ".join(["object"] * len(assigned)) + "]"
+            return []
+        out: list[str] = []
+        for n in ast.walk(tree):
+            if isinstance(n, ast.Assign):
+                for tgt in n.targets:
+                    if isinstance(tgt, ast.Name) and tgt.id not in out:
+                        out.append(tgt.id)
+                    elif isinstance(tgt, ast.Tuple):
+                        for e in tgt.elts:
+                            if isinstance(e, ast.Name) and e.id not in out:
+                                out.append(e.id)
+            elif isinstance(n, ast.AnnAssign):
+                tgt = n.target
+                if isinstance(tgt, ast.Name) and tgt.id not in out:
+                    out.append(tgt.id)
+            elif isinstance(n, ast.AugAssign):
+                tgt = n.target
+                if isinstance(tgt, ast.Name) and tgt.id not in out:
+                    out.append(tgt.id)
+        return out
 
     lines: list[str] = ["from __future__ import annotations", ""]
     if needs_any:
@@ -120,16 +112,50 @@ def refactor_node(state: dict[str, Any]) -> dict[str, Any]:
     if collected_imports:
         lines.extend(sorted(set(collected_imports)))
         lines.append("")
-    lines.append(f"def run_all() -> {ret_annot}:")
-    if body_src:
-        lines.extend("    " + ln for ln in processed_body_lines)
-        if len(assigned) == 1:
-            lines.append(f"    return {assigned[0]}")
-        elif len(assigned) > 1:
-            lines.append("    return " + ", ".join(assigned))
-    else:
-        lines.append("    pass")
-    lines.append("")
+
+    if mode in ("functions", "both"):
+        for idx, body in enumerate(cell_bodies):
+            names = assigned_names(body)
+            if len(names) == 0:
+                ret_annot = "None"
+            elif len(names) == 1:
+                ret_annot = "object"
+            else:
+                ret_annot = "tuple[" + ", ".join(["object"] * len(names)) + "]"
+            lines.append(f"def cell_{idx}() -> {ret_annot}:")
+            if body:
+                lines.extend("    " + ln for ln in body)
+                if len(names) == 1:
+                    lines.append(f"    return {names[0]}")
+                elif len(names) > 1:
+                    lines.append("    return " + ", ".join(names))
+            else:
+                lines.append("    pass")
+            lines.append("")
+
+    if mode in ("run-all", "both"):
+        flat_body = [ln for body in cell_bodies for ln in body]
+        names_all = assigned_names(flat_body)
+        if len(names_all) == 0:
+            ret_annot = "None"
+        elif len(names_all) == 1:
+            ret_annot = "object"
+        else:
+            ret_annot = "tuple[" + ", ".join(["object"] * len(names_all)) + "]"
+        lines.append(f"def run_all() -> {ret_annot}:")
+        if mode == "run-all":
+            if flat_body:
+                lines.extend("    " + ln for ln in flat_body)
+                if len(names_all) == 1:
+                    lines.append(f"    return {names_all[0]}")
+                elif len(names_all) > 1:
+                    lines.append("    return " + ", ".join(names_all))
+            else:
+                lines.append("    pass")
+        else:
+            for idx in range(len(cell_bodies)):
+                lines.append(f"    cell_{idx}()")
+        lines.append("")
 
     files = {plan["module_path"]: "\n".join(lines) + "\n"}
     out_dir = Path(state["output_dir"]) / plan["package_root"]

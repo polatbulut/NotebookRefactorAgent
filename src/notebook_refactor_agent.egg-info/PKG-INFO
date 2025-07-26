@@ -6,8 +6,6 @@ Author-email: Your Name <you@example.com>
 Requires-Python: >=3.10
 Description-Content-Type: text/markdown
 Requires-Dist: langgraph>=0.0.50
-Requires-Dist: langchain>=0.2.0
-Requires-Dist: openai>=1.0.0
 Requires-Dist: tenacity
 Requires-Dist: pydantic>=2
 Requires-Dist: hydra-core>=1.3
@@ -16,8 +14,7 @@ Requires-Dist: nbformat
 Requires-Dist: jupytext
 Requires-Dist: libcst
 Requires-Dist: astroid
-Requires-Dist: typer[all]
-Requires-Dist: pyyaml
+Requires-Dist: typer
 Provides-Extra: dev
 Requires-Dist: pytest; extra == "dev"
 Requires-Dist: pytest-cov; extra == "dev"
@@ -29,6 +26,9 @@ Requires-Dist: mypy; extra == "dev"
 Requires-Dist: radon; extra == "dev"
 Requires-Dist: pre-commit; extra == "dev"
 Requires-Dist: types-PyYAML; extra == "dev"
+Provides-Extra: agents
+Requires-Dist: openai>=1.0.0; extra == "agents"
+Requires-Dist: langchain>=0.2.0; extra == "agents"
 
 # NotebookRefactorAgent
 

@@ -1,0 +1,7 @@
+mode: run-all
+safe: true
+timeout_secs: 60
+model: none
+temperature: 0.0
+max_output_tokens: 1024
+cache_dir: .cache/nra
