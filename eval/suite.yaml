@@ -16,7 +16,7 @@ cases:
       black_ok: true
       mypy_ok: true
       min_functions: 1
-    - id: case3
+  - id: case3
     input: eval/cases/case3/input.ipynb
     acceptance:
       pytest_returncode: 0
