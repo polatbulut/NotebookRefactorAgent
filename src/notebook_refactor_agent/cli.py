@@ -33,18 +33,19 @@ def inspect_cmd(input_nb: Path) -> None:
 def refactor_cmd(
     input_nb: Path,
     output_dir: Path = Path("out_pkg"),
-    mode: str = typer.Option("run-all", "--mode"),
+    mode: str = typer.Option("run-all", "--mode", help="run-all|functions|both"),
     safe: bool = typer.Option(True, "--safe/--no-safe"),
     timeout_secs: int = typer.Option(60, "--timeout"),
     budget_usd: float = typer.Option(0.0, "--budget-usd"),
     dry_run: bool = typer.Option(False, "--dry-run"),
+    verbose: bool = typer.Option(False, "--verbose"),
 ) -> None:
     cfg = _load_cfg()
     app_graph = build_graph()
     state = {
         "input_nb": str(input_nb),
         "output_dir": str(output_dir),
-        "mode": mode or cfg.get("mode", "run-all"),
+        "mode": (mode or str(cfg.get("mode", "run-all"))),
         "safe": bool(safe if safe is not None else cfg.get("safe", True)),
         "timeout_secs": int(
             timeout_secs if timeout_secs is not None else cfg.get("timeout_secs", 60)
@@ -56,6 +57,9 @@ def refactor_cmd(
     report = final_state.get("report", "done")
     metrics = final_state.get("metrics", {}) or {}
     typer.echo(report)
+    if verbose:
+        reports_dir = (output_dir / ".reports").resolve()
+        typer.echo(f"Reports: {reports_dir}")
     fail = any(
         int(metrics.get(k, 0)) != 0
         for k in (
