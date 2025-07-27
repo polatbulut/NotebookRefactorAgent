@@ -82,13 +82,16 @@ def critic_node(state: dict[str, Any]) -> dict[str, Any]:
     out = Path(state["output_dir"])
     reports = out / ".reports"
     reports.mkdir(parents=True, exist_ok=True)
+
     r_pytest = _run(["pytest", "-q", str(out / "tests")], cwd=out)
     r_ruff = _run(["ruff", "check", str(out)], cwd=out)
     r_black = _run(["black", "--check", str(out)], cwd=out)
     r_mypy = _run(["mypy", str(out)], cwd=out)
+
     timeout_secs = int(state.get("timeout_secs", 60))
     safe = bool(state.get("safe", True))
     r_exec = _safe_exec(out, timeout_secs, safe)
+
     (reports / "pytest.txt").write_text(r_pytest["stdout"] + r_pytest["stderr"])
     (reports / "ruff.txt").write_text(r_ruff["stdout"] + r_ruff["stderr"])
     (reports / "black.txt").write_text(r_black["stdout"] + r_black["stderr"])
@@ -96,6 +99,7 @@ def critic_node(state: dict[str, Any]) -> dict[str, Any]:
     (reports / "exec.txt").write_text(
         str(r_exec.get("seconds", 0.0)) + "\n" + r_exec["stdout"] + r_exec["stderr"]
     )
+
     metrics = {
         "pytest_returncode": int(r_pytest["returncode"]),
         "ruff_returncode": int(r_ruff["returncode"]),
@@ -114,4 +118,28 @@ def critic_node(state: dict[str, Any]) -> dict[str, Any]:
     (reports / "report.json").write_text(
         json.dumps({"metrics": metrics, "report": report}, indent=2)
     )
+
+    plan = state.get("plan", {})
+    module_rel = plan.get("module_path", "src_pkg/module.py")
+    tests_rel = plan.get("tests_path", "tests/test_module.py")
+    base = out.resolve()
+    lines = []
+    lines.append("Notebook Refactor Agent Report")
+    lines.append("")
+    lines.append(f"Summary: {report}")
+    lines.append("")
+    lines.append("Generated")
+    lines.append(f"- module: {(base / module_rel).resolve()}")
+    lines.append(f"- tests:  {(base / tests_rel).resolve()}")
+    lines.append("")
+    lines.append("Reports")
+    lines.append(f"- pytest: {(reports / 'pytest.txt').resolve()}")
+    lines.append(f"- ruff:   {(reports / 'ruff.txt').resolve()}")
+    lines.append(f"- black:  {(reports / 'black.txt').resolve()}")
+    lines.append(f"- mypy:   {(reports / 'mypy.txt').resolve()}")
+    lines.append(f"- exec:   {(reports / 'exec.txt').resolve()}")
+    lines.append(f"- json:   {(reports / 'report.json').resolve()}")
+    lines.append("")
+    (reports / "index.txt").write_text("\n".join(lines) + "\n")
+
     return {"metrics": metrics, "report": report}

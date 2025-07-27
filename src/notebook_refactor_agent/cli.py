@@ -53,13 +53,21 @@ def refactor_cmd(
         "budget_usd": float(budget_usd),
         "dry_run": bool(dry_run),
     }
-    final_state = app_graph.invoke(state)
+    final_state: dict[str, Any] = app_graph.invoke(state)
     report = final_state.get("report", "done")
     metrics = final_state.get("metrics", {}) or {}
     typer.echo(report)
     if verbose:
+        plan = final_state.get("plan", {}) or {}
+        module_rel = plan.get("module_path", "src_pkg/module.py")
+        tests_rel = plan.get("tests_path", "tests/test_module.py")
         reports_dir = (output_dir / ".reports").resolve()
+        typer.echo(f"Module:  {(Path(output_dir) / module_rel).resolve()}")
+        typer.echo(f"Tests:   {(Path(output_dir) / tests_rel).resolve()}")
         typer.echo(f"Reports: {reports_dir}")
+        index_path = reports_dir / "index.txt"
+        if index_path.exists():
+            typer.echo(f"Index:   {index_path.resolve()}")
     fail = any(
         int(metrics.get(k, 0)) != 0
         for k in (
