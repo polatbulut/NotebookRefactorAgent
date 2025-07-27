@@ -8,6 +8,7 @@ jupytext
 libcst
 astroid
 typer
+pyyaml
 
 [agents]
 openai>=1.0.0

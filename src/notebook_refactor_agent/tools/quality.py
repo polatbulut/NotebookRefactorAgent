@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import subprocess
 from pathlib import Path
+import subprocess
 
 
 def _run(cmd: list[str], cwd: Path | None = None) -> tuple[int, str, str]:

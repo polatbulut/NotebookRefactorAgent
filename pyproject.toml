@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "notebook-refactor-agent"
 version = "0.1.0"
@@ -5,6 +9,7 @@ description = "Turn messy notebooks into production-grade Python packages with a
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [{ name = "Your Name", email = "you@example.com" }]
+license = { text = "MIT" }
 dependencies = [
     "langgraph>=0.0.50",
     "tenacity",
@@ -16,7 +21,21 @@ dependencies = [
     "libcst",
     "astroid",
     "typer",
+    "pyyaml",
 ]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/polatbulut/NotebookRefactorAgent"
+Issues = "https://github.com/polatbulut/NotebookRefactorAgent/issues"
+
+[project.scripts]
+nra = "notebook_refactor_agent.cli:app"
 
 [project.optional-dependencies]
 dev = [
@@ -36,12 +55,23 @@ agents = [
     "langchain>=0.2.0",
 ]
 
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
 [tool.ruff]
 line-length = 100
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
 ignore = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["notebook_refactor_agent"]
+force-sort-within-sections = true
+section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
 
 [tool.black]
 line-length = 100

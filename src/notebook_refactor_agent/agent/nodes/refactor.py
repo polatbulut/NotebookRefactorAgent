@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import ast
-import re
 from pathlib import Path
+import re
 from typing import Any, cast
 
 import nbformat

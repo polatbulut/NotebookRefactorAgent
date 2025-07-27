@@ -3,8 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, cast
 
-import typer
 from omegaconf import OmegaConf
+import typer
 
 from .agent.graph import build_graph
 from .tools.nb_inspector import summarize_notebook

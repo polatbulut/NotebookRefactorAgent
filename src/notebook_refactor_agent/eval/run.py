@@ -3,12 +3,12 @@ from __future__ import annotations
 import argparse
 import ast
 import csv
+from datetime import datetime
 import json
+from pathlib import Path
 import subprocess
 import sys
 import time
-from datetime import datetime
-from pathlib import Path
 from typing import Any
 
 import yaml

@@ -3,6 +3,13 @@ Name: notebook-refactor-agent
 Version: 0.1.0
 Summary: Turn messy notebooks into production-grade Python packages with agents
 Author-email: Your Name <you@example.com>
+License: MIT
+Project-URL: Homepage, https://github.com/polatbulut/NotebookRefactorAgent
+Project-URL: Issues, https://github.com/polatbulut/NotebookRefactorAgent/issues
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
 Requires-Python: >=3.10
 Description-Content-Type: text/markdown
 Requires-Dist: langgraph>=0.0.50
@@ -15,6 +22,7 @@ Requires-Dist: jupytext
 Requires-Dist: libcst
 Requires-Dist: astroid
 Requires-Dist: typer
+Requires-Dist: pyyaml
 Provides-Extra: dev
 Requires-Dist: pytest; extra == "dev"
 Requires-Dist: pytest-cov; extra == "dev"

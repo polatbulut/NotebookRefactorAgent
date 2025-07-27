@@ -2,10 +2,11 @@ import json
 from pathlib import Path
 
 import nbformat as nbf
-import notebook_refactor_agent.agent.nodes.writer_node as writer_node
+
 from notebook_refactor_agent.agent.nodes.critic import critic_node
 from notebook_refactor_agent.agent.nodes.planner import planner_node
 from notebook_refactor_agent.agent.nodes.refactor import refactor_node
+import notebook_refactor_agent.agent.nodes.writer_node as writer_node
 
 
 def _make_nb(tmp_path: Path) -> Path:
