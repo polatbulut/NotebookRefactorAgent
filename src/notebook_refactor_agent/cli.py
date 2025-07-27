@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import typer
 from omegaconf import OmegaConf
@@ -16,7 +16,10 @@ def _load_cfg() -> dict[str, Any]:
     p = Path("configs/default.yaml")
     if p.exists():
         try:
-            return dict(OmegaConf.to_container(OmegaConf.load(str(p)), resolve=True))
+            obj: Any = OmegaConf.to_container(OmegaConf.load(str(p)), resolve=True)
+            if isinstance(obj, dict):
+                return cast(dict[str, Any], obj)
+            return {}
         except Exception:
             return {}
     return {}
