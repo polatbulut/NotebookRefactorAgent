@@ -61,6 +61,10 @@ disable_error_code = ["no-untyped-call"]
 module = "notebook_refactor_agent.tools.nb_inspector"
 disable_error_code = ["no-untyped-call"]
 
+[[tool.mypy.overrides]]
+module = "tests.*"
+disable_error_code = ["misc", "no-untyped-def"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 norecursedirs = ["eval_runs", "out_pkg", ".venv", "build", "dist"]
