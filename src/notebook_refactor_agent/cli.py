@@ -28,20 +28,22 @@ F = TypeVar("F", bound=Callable[..., Any])
 
 def typed_command(*dargs: Any, **dkwargs: Any) -> Callable[[F], F]:
     """A typed wrapper around app.command to avoid mypy 'Untyped decorator' errors."""
-    dec = cast(Callable[[F], F], app.command(*dargs, **dkwargs))
+    dec = app.command(*dargs, **dkwargs)  # registers the command when called
 
     def _decorator(fn: F) -> F:
-        return dec(fn)
+        dec(fn)  # register for side-effect; Typer returns an object we don't need
+        return fn  # return the original function to preserve type F
 
     return _decorator
 
 
 def typed_command_for(app_obj: typer.Typer, *dargs: Any, **dkwargs: Any) -> Callable[[F], F]:
     """Same as typed_command, but for a provided Typer instance (e.g., subcommands)."""
-    dec = cast(Callable[[F], F], app_obj.command(*dargs, **dkwargs))
+    dec = app_obj.command(*dargs, **dkwargs)
 
     def _decorator(fn: F) -> F:
-        return dec(fn)
+        dec(fn)
+        return fn
 
     return _decorator
 
