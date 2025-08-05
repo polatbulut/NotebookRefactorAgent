@@ -51,6 +51,11 @@ mypy src
 
 
 ## Run
+
+```bash
+pip install -e ".[dev,agents]"
+```
+
 ```bash
 nra refactor examples/messy_notebook.ipynb \
   --output-dir out_pkg_llm \
