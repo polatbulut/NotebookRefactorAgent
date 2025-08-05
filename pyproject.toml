@@ -96,6 +96,10 @@ disable_error_code = ["no-untyped-call"]
 module = "tests.*"
 disable_error_code = ["misc", "no-untyped-def"]
 
+[[tool.mypy.overrides]]
+module = "groq.*"
+ignore_missing_imports = true
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 norecursedirs = ["eval_runs", "out_pkg", ".venv", "build", "dist"]

@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, cast
+from typing import Any, TypeVar, cast
 
 from omegaconf import OmegaConf
 import typer
@@ -16,6 +17,18 @@ TEMPERATURE_OPT = typer.Option(0.1, "--temperature")
 MAX_TOKENS_OPT = typer.Option(2048, "--max-output-tokens")
 CACHE_DIR_OPT = typer.Option(Path(".cache/nra"), "--cache-dir")
 
+# ---- Typed decorator wrapper to keep mypy happy ----
+F = TypeVar("F", bound=Callable[..., Any])
+
+
+def typed_command(*dargs: Any, **dkwargs: Any) -> Callable[[F], F]:
+    """A typed wrapper around app.command to avoid mypy 'Untyped decorator' errors."""
+
+    def _decorator(fn: F) -> F:
+        return cast(F, app.command(*dargs, **dkwargs)(fn))
+
+    return _decorator
+
 
 def _load_cfg() -> dict[str, Any]:
     p = Path("configs/default.yaml")
@@ -28,14 +41,14 @@ def _load_cfg() -> dict[str, Any]:
     return {}
 
 
-@app.command(name="inspect")  # type: ignore[misc]
+@typed_command(name="inspect")
 def inspect_cmd(input_nb: Path) -> None:
     """Print a quick JSON-like summary of a notebook."""
     summary: Any = summarize_notebook(input_nb)
     typer.echo(summary)
 
 
-@app.command(name="refactor")  # type: ignore[misc]
+@typed_command(name="refactor")
 def refactor_cmd(
     input_nb: Path,
     output_dir: Path = Path("out_pkg"),
