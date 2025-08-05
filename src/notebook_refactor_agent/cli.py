@@ -28,20 +28,20 @@ F = TypeVar("F", bound=Callable[..., Any])
 
 def typed_command(*dargs: Any, **dkwargs: Any) -> Callable[[F], F]:
     """A typed wrapper around app.command to avoid mypy 'Untyped decorator' errors."""
-    dec = app.command(*dargs, **dkwargs)  # dec: Callable[[Callable[..., Any]], Any]
+    dec = cast(Callable[[F], F], app.command(*dargs, **dkwargs))
 
     def _decorator(fn: F) -> F:
-        return cast(F, dec(fn))
+        return dec(fn)
 
     return _decorator
 
 
 def typed_command_for(app_obj: typer.Typer, *dargs: Any, **dkwargs: Any) -> Callable[[F], F]:
     """Same as typed_command, but for a provided Typer instance (e.g., subcommands)."""
-    dec = app_obj.command(*dargs, **dkwargs)
+    dec = cast(Callable[[F], F], app_obj.command(*dargs, **dkwargs))
 
     def _decorator(fn: F) -> F:
-        return cast(F, dec(fn))
+        return dec(fn)
 
     return _decorator
 
