@@ -3,8 +3,12 @@ from __future__ import annotations
 import os
 from typing import Any
 
+from groq import Groq
+
 from .interfaces import LLMClient
 
+# Aliases / deprecations guard.
+# If Groq decommissions a model, map it here to a stable alternative.
 _MODEL_ALIASES: dict[str, str] = {
     "llama-3.1-70b-versatile": "llama-3.3-70b-versatile",
     "llama-3.1-8b-instant": "llama-3.3-8b-instant",
@@ -12,25 +16,18 @@ _MODEL_ALIASES: dict[str, str] = {
 
 
 def _normalize_model(name: str) -> tuple[str, bool]:
+    """Return (normalized_name, changed?)."""
     new = _MODEL_ALIASES.get(name, name)
     return new, (new != name)
 
 
 class GroqLLM(LLMClient):
+    """Thin Groq chat client wrapper with minimal, typed surface."""
+
     def __init__(self) -> None:
         api_key = os.environ.get("GROQ_API_KEY", "")
         if not api_key:
             raise RuntimeError("GROQ_API_KEY is not set")
-
-        # Lazy import so CI that doesn't install 'groq' can still import this module.
-        try:
-            from groq import Groq
-        except Exception as e:  # pragma: no cover
-            raise RuntimeError(
-                "The 'groq' package is required to use provider='groq'. "
-                "Install with: pip install 'notebook-refactor-agent[agents]' or 'groq'."
-            ) from e
-
         self.client = Groq(api_key=api_key)
 
     def chat(
@@ -41,7 +38,7 @@ class GroqLLM(LLMClient):
         max_tokens: int,
         extra: dict[str, Any] | None = None,
     ) -> tuple[str, dict[str, Any]]:
-        model_norm, aliased = _normalize_model(model)
+        model_norm, _ = _normalize_model(model)
         resp = self.client.chat.completions.create(
             model=model_norm,
             messages=[{"role": m["role"], "content": m["content"]} for m in messages],
@@ -50,14 +47,12 @@ class GroqLLM(LLMClient):
         )
         text = resp.choices[0].message.content or ""
         meta = {
-            "id": getattr(resp, "id", ""),
-            "model": getattr(resp, "model", model_norm),
+            "id": resp.id,
+            "model": resp.model,
             "usage": {
-                "prompt_tokens": getattr(getattr(resp, "usage", None), "prompt_tokens", 0),
-                "completion_tokens": getattr(getattr(resp, "usage", None), "completion_tokens", 0),
-                "total_tokens": getattr(getattr(resp, "usage", None), "total_tokens", 0),
+                "prompt_tokens": int(getattr(resp.usage, "prompt_tokens", 0) or 0),
+                "completion_tokens": int(getattr(resp.usage, "completion_tokens", 0) or 0),
+                "total_tokens": int(getattr(resp.usage, "total_tokens", 0) or 0),
             },
         }
-        if aliased:
-            meta["model_normalized_from"] = model
         return text, meta

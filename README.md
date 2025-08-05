@@ -17,6 +17,19 @@ pip install -e ".[dev]"
 pre-commit install
 ```
 
+## LLM Mode (Groq)
+
+This project can plan/refactor/write-tests using an LLM.
+
+### Setup
+
+1. Create a Groq API key at https://console.groq.com/
+2. Export it in your shell:
+
+```bash
+export GROQ_API_KEY="gsk_..."
+```
+
 ### Inspect Notebook
 ```bash
 python -m notebook_refactor_agent.cli inspect examples/messy_notebook.ipynb
@@ -34,4 +47,16 @@ pytest -q
 ruff check src tests
 black --check src tests
 mypy src
+```
+
+
+## Run
+```bash
+nra refactor examples/messy_notebook.ipynb \
+  --output-dir out_pkg_llm \
+  --provider groq \
+  --model llama-3.3-70b-versatile \
+  --temperature 0.1 \
+  --max-output-tokens 4096 \
+  --verbose
 ```

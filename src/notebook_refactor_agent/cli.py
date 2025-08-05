@@ -8,29 +8,40 @@ from omegaconf import OmegaConf
 import typer
 
 from .agent.graph import build_graph
+from .llm.factory import supported_models_help
 from .tools.nb_inspector import summarize_notebook
 
 app = typer.Typer(help="Notebook Refactor Agent")
+
+# Sub-typer for config utilities
+config_app = typer.Typer(help="Configuration commands")
+app.add_typer(config_app, name="config")
 
 # ---- B008-safe Typer option defaults (avoid calling typer.Option in signature) ----
 TEMPERATURE_OPT = typer.Option(0.1, "--temperature")
 MAX_TOKENS_OPT = typer.Option(2048, "--max-output-tokens")
 CACHE_DIR_OPT = typer.Option(Path(".cache/nra"), "--cache-dir")
 
-# ---- Typed decorator wrapper to keep mypy happy ----
+# ---- Typed decorator wrappers to keep mypy happy ----
 F = TypeVar("F", bound=Callable[..., Any])
 
 
 def typed_command(*dargs: Any, **dkwargs: Any) -> Callable[[F], F]:
-    """A typed wrapper around app.command to avoid mypy 'Untyped decorator' errors.
-    We register with Typer for side-effects, but return the original function `fn`
-    so the type is preserved without casts.
-    """
-    decorator = app.command(*dargs, **dkwargs)
+    """A typed wrapper around app.command to avoid mypy 'Untyped decorator' errors."""
+    dec = app.command(*dargs, **dkwargs)  # dec: Callable[[Callable[..., Any]], Any]
 
     def _decorator(fn: F) -> F:
-        decorator(fn)  # register with Typer
-        return fn  # return the original, preserving type
+        return cast(F, dec(fn))
+
+    return _decorator
+
+
+def typed_command_for(app_obj: typer.Typer, *dargs: Any, **dkwargs: Any) -> Callable[[F], F]:
+    """Same as typed_command, but for a provided Typer instance (e.g., subcommands)."""
+    dec = app_obj.command(*dargs, **dkwargs)
+
+    def _decorator(fn: F) -> F:
+        return cast(F, dec(fn))
 
     return _decorator
 
@@ -44,6 +55,15 @@ def _load_cfg() -> dict[str, Any]:
         except Exception:
             return {}
     return {}
+
+
+def _tokens_from_meta(meta: dict[str, Any]) -> tuple[int, int, int]:
+    """Return (prompt, completion, total) tokens from a provider meta payload."""
+    usage = cast(dict[str, Any], meta.get("usage", {}) or {})
+    pt = int(usage.get("prompt_tokens", usage.get("tokens_prompt", 0)) or 0)
+    ct = int(usage.get("completion_tokens", usage.get("tokens_completion", 0)) or 0)
+    tt = int(usage.get("total_tokens", pt + ct) or (pt + ct))
+    return pt, ct, tt
 
 
 @typed_command(name="inspect")
@@ -60,8 +80,8 @@ def refactor_cmd(
     mode: str = typer.Option("run-all", "--mode", help="run-all|functions|both"),
     safe: bool = typer.Option(True, "--safe/--no-safe"),
     timeout_secs: int = typer.Option(60, "--timeout"),
-    provider: str = typer.Option("none", "--provider"),
-    model: str = typer.Option("none", "--model"),
+    provider: str = typer.Option("none", "--provider", help="LLM provider, e.g. 'groq' or 'none'"),
+    model: str = typer.Option("none", "--model", help=supported_models_help()),
     temperature: float = TEMPERATURE_OPT,
     max_output_tokens: int = MAX_TOKENS_OPT,
     cache_dir: Path = CACHE_DIR_OPT,
@@ -110,6 +130,22 @@ def refactor_cmd(
         if index_path.exists():
             typer.echo(f"Index:   {index_path.resolve()}")
 
+        # LLM token summary (if any)
+        calls = cast(list[dict[str, Any]], final_state.get("llm_calls", []) or [])
+        if calls:
+            total_pt = total_ct = total_tt = 0
+            typer.echo("\nLLM usage:")
+            for c in calls:
+                pt, ct, tt = _tokens_from_meta(c.get("meta", {}))
+                total_pt += pt
+                total_ct += ct
+                total_tt += tt
+                typer.echo(
+                    f"- node={c.get('node')} provider={c.get('provider')} model={c.get('model')} "
+                    f"tokens: prompt={pt} completion={ct} total={tt}"
+                )
+            typer.echo(f"Total tokens: prompt={total_pt} completion={total_ct} total={total_tt}\n")
+
     fail = any(
         int(metrics.get(k, 0)) != 0
         for k in (
@@ -121,6 +157,41 @@ def refactor_cmd(
         )
     )
     raise typer.Exit(code=1 if fail else 0)
+
+
+# -----------------------
+# config subcommands
+# -----------------------
+
+_DEFAULT_CONFIG_YAML = """\
+# Notebook Refactor Agent - default config
+mode: run-all
+safe: true
+timeout_secs: 60
+
+# LLM
+provider: none      # e.g. 'groq' or 'none'
+model: none         # see: nra --help for supported models
+temperature: 0.1
+max_output_tokens: 2048
+
+# Cache
+cache_dir: .cache/nra
+"""
+
+
+@typed_command_for(config_app, name="init")
+def config_init(
+    path: Path = Path("configs/default.yaml"),
+    overwrite: bool = typer.Option(False, "--overwrite"),
+) -> None:
+    """Create a default config file at configs/default.yaml."""
+    if path.exists() and not overwrite:
+        typer.echo(f"Config already exists at {path}. Use --overwrite to replace.")
+        raise typer.Exit(code=1)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(_DEFAULT_CONFIG_YAML)
+    typer.echo(f"Wrote {path}")
 
 
 if __name__ == "__main__":

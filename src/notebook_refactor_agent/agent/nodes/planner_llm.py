@@ -13,97 +13,87 @@ from ..schemas import FunctionSpec, Plan
 
 
 def planner_llm_node(state: dict[str, Any]) -> dict[str, Any]:
-    """
-    LLM-backed planner. Produces a Plan from a notebook summary.
-    """
+    """LLM-based planner: proposes mapping of cells → functions/files."""
     p = Path(state["input_nb"])
-    nb: dict[str, Any] = cast(dict[str, Any], nbformat.read(str(p), as_version=4))
-    provider = str(state.get("provider", "groq"))
-    model = str(state.get("model", "llama-3.3-70b-versatile"))
+    nb: Any = cast(Any, nbformat.read(str(p), as_version=4))
+
+    # Summarize cells for the prompt
+    cells: list[dict[str, Any]] = []
+    for idx, c in enumerate(nb.cells):
+        if c.get("cell_type") != "code":
+            continue
+        src: str = c.get("source", "")
+        head = src.splitlines()[:3]
+        cells.append({"id": idx, "type": "code", "head": head, "lines": len(src.splitlines())})
+
+    # System prompt
+    system_prompt = Path(__file__).resolve().parents[2] / "prompts" / "planner_system.txt"
+    sp_text = (
+        system_prompt.read_text()
+        if system_prompt.exists()
+        else "You are the **Planner Agent**. Return JSON with keys: modules, cell_map, configs, api, cli."
+    )
+
+    user_payload = {
+        "summary": {"cells": cells},
+        "style_guide": "simple single module, tests, minimal API",
+    }
+
+    provider = str(state.get("provider", "none"))
+    model = str(state.get("model", "none"))
     temperature = float(state.get("temperature", 0.1))
     max_tokens = int(state.get("max_output_tokens", 2048))
     cache_dir = Path(state.get("cache_dir", ".cache/nra"))
 
-    # Build a minimal summary of code cells for the prompt
-    cells_summary: list[dict[str, Any]] = []
-    for i, c in enumerate(nb["cells"]):
-        ctype = c.get("cell_type")
-        if ctype != "code":
-            continue
-        src = str(c.get("source", ""))
-        cells_summary.append(
-            {
-                "id": i,
-                "type": ctype,
-                "head": src.splitlines()[:3],
-                "lines": len(src.splitlines()),
-            }
-        )
-
-    # Also keep explicit indices for a robust fallback
-    code_cells: list[int] = [i for i, c in enumerate(nb["cells"]) if c.get("cell_type") == "code"]
-
-    # Prompts
-    system_prompt = Path(Path(__file__).resolve().parents[2] / "prompts" / "planner.md").read_text(
-        encoding="utf-8"
-    )
-    user_payload = {
-        "summary": {"cells": cells_summary},
-        "style_guide": "simple single module, tests, minimal API",
-    }
-    messages = [
-        {"role": "system", "content": system_prompt},
-        {"role": "user", "content": json.dumps(user_payload)},
-    ]
-
-    # Cache key is the user content (summary+style guide)
-    key_prompt = messages[-1]["content"]
-    cache = LLMCache(root=cache_dir)
+    # Cache
+    cache = LLMCache(cache_dir / "planner")
+    key_prompt = json.dumps({"sp": sp_text, "user": user_payload}, ensure_ascii=False)
     cached = cache.get(provider, model, key_prompt)
+
     if cached:
-        text, _meta = cached
+        text, meta = cached
     else:
+        messages = [
+            {"role": "system", "content": sp_text},
+            {"role": "user", "content": str(user_payload)},
+        ]
         llm = create_llm(provider)
         text, meta = llm.chat(messages, model=model, temperature=temperature, max_tokens=max_tokens)
         cache.put(provider, model, key_prompt, text, meta)
 
     obj = extract_json(text)
-
-    # Build function specs from cell_map if present
+    # Default to all code cells if no mapping is provided
+    cell_map = cast(dict[str, dict[str, str]], obj.get("cell_map", {}))
     functions: list[FunctionSpec] = []
-    cell_map: dict[str, Any] | list[Any] | None = (
-        obj.get("cell_map") if isinstance(obj, dict) else None
-    )
-    if isinstance(cell_map, dict):
+    if cell_map:
         for k, v in cell_map.items():
             try:
                 cid = int(k)
             except Exception:
                 continue
-            v = v or {}
-            fn = str(v.get("function", f"cell_{cid}"))
+            fn = v.get("function") or f"cell_{cid}"
             functions.append(FunctionSpec(cell_id=cid, fn_name=fn))
+    else:
+        # fallback: keep original ordering of code cells
+        code_cells: list[int] = [cast(int, c["id"]) for c in cells]
+        functions = [FunctionSpec(cell_id=cid, fn_name=f"cell_{cid}") for cid in code_cells]
 
     plan = Plan(
-        module_path=(
-            obj.get("modules", {}).get("main", "src_pkg/module.py")
-            if isinstance(obj.get("modules", {}), dict)
-            else "src_pkg/module.py"
-        ),
-        tests_path=(
-            obj.get("cli", {}).get("tests_path", "tests/test_module.py")
-            if isinstance(obj.get("cli", {}), dict)
-            else "tests/test_module.py"
-        ),
-        package_root=(
-            obj.get("modules", {}).get("package_root", "src_pkg")
-            if isinstance(obj.get("modules", {}), dict)
-            else "src_pkg"
-        ),
-        functions=(
-            functions
-            if functions
-            else [FunctionSpec(cell_id=i, fn_name=f"cell_{i}") for i in code_cells]
-        ),
+        module_path=obj.get("modules", {}).get("main", "src_pkg/module.py"),
+        tests_path=obj.get("cli", {}).get("tests_path", "tests/test_module.py"),
+        package_root=obj.get("modules", {}).get("package_root", "src_pkg"),
+        functions=functions,
     )
-    return {"plan": plan.model_dump()}
+
+    # Record LLM usage for later reporting
+    calls = list(state.get("llm_calls", []))
+    calls.append(
+        {
+            "node": "planner",
+            "provider": provider,
+            "model": meta.get("model", model),
+            "meta": meta,
+        }
+    )
+
+    return {"plan": plan.model_dump(), "llm_calls": calls}
