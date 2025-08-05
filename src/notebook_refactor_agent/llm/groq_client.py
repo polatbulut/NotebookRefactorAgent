@@ -3,11 +3,8 @@ from __future__ import annotations
 import os
 from typing import Any
 
-from groq import Groq
-
 from .interfaces import LLMClient
 
-# Model aliases to keep older names working
 _MODEL_ALIASES: dict[str, str] = {
     "llama-3.1-70b-versatile": "llama-3.3-70b-versatile",
     "llama-3.1-8b-instant": "llama-3.3-8b-instant",
@@ -15,9 +12,8 @@ _MODEL_ALIASES: dict[str, str] = {
 
 
 def _normalize_model(name: str) -> tuple[str, bool]:
-    """Return (normalized_name, changed?)."""
     new = _MODEL_ALIASES.get(name, name)
-    return new, new != name
+    return new, (new != name)
 
 
 class GroqLLM(LLMClient):
@@ -25,6 +21,16 @@ class GroqLLM(LLMClient):
         api_key = os.environ.get("GROQ_API_KEY", "")
         if not api_key:
             raise RuntimeError("GROQ_API_KEY is not set")
+
+        # Lazy import so CI that doesn't install 'groq' can still import this module.
+        try:
+            from groq import Groq
+        except Exception as e:  # pragma: no cover
+            raise RuntimeError(
+                "The 'groq' package is required to use provider='groq'. "
+                "Install with: pip install 'notebook-refactor-agent[agents]' or 'groq'."
+            ) from e
+
         self.client = Groq(api_key=api_key)
 
     def chat(
@@ -35,17 +41,15 @@ class GroqLLM(LLMClient):
         max_tokens: int,
         extra: dict[str, Any] | None = None,
     ) -> tuple[str, dict[str, Any]]:
-        model_norm, changed = _normalize_model(model)
-
+        model_norm, aliased = _normalize_model(model)
         resp = self.client.chat.completions.create(
             model=model_norm,
             messages=[{"role": m["role"], "content": m["content"]} for m in messages],
             temperature=temperature,
             max_tokens=max_tokens,
         )
-
         text = resp.choices[0].message.content or ""
-        meta: dict[str, Any] = {
+        meta = {
             "id": getattr(resp, "id", ""),
             "model": getattr(resp, "model", model_norm),
             "usage": {
@@ -54,7 +58,6 @@ class GroqLLM(LLMClient):
                 "total_tokens": getattr(getattr(resp, "usage", None), "total_tokens", 0),
             },
         }
-        if changed:
-            meta["model_alias_from"] = model
-            meta["model_alias_to"] = model_norm
+        if aliased:
+            meta["model_normalized_from"] = model
         return text, meta
