@@ -1,0 +1,12 @@
+{
+  "text": "```python\n{\n    \"tests/test_module.py\": \"\"\"\nimport pytest\nfrom src_pkg.main import init_vars, print_hello\n\ndef test_init_vars_smoke():\n    \"\"\"Smoke test for init_vars function\"\"\"\n    init_vars()\n\ndef test_print_hello_smoke(capsys):\n    \"\"\"Smoke test for print_hello function\"\"\"\n    print_hello()\n    captured = capsys.readouterr()\n    assert captured.out.strip() == \"Hello\"\n\ndef test_init_vars_return_type():\n    \"\"\"Test return type of init_vars function\"\"\"\n    result = init_vars()\n    assert result is None\n\ndef test_print_hello_output(capsys):\n    \"\"\"Test output of print_hello function\"\"\"\n    print_hello()\n    captured = capsys.readouterr()\n    assert captured.out.strip() == \"Hello\"\n\"\"\"\n}\n```",
+  "meta": {
+    "id": "chatcmpl-11b331a6-7232-4c77-b103-aa5e8ee9ef64",
+    "model": "llama-3.3-70b-versatile",
+    "usage": {
+      "prompt_tokens": 188,
+      "completion_tokens": 162,
+      "total_tokens": 350
+    }
+  }
+}

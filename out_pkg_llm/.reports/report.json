@@ -1,0 +1,13 @@
+{
+  "metrics": {
+    "pytest_returncode": 4,
+    "ruff_returncode": 1,
+    "black_returncode": 2,
+    "mypy_returncode": 2,
+    "exec_returncode": 1,
+    "exec_seconds": 0.030679624993354082,
+    "exec_stdout_len": 0,
+    "exec_stderr_len": 519
+  },
+  "report": "pytest=4 ruff=1 black=2 mypy=2 exec=1 secs=0.03"
+}

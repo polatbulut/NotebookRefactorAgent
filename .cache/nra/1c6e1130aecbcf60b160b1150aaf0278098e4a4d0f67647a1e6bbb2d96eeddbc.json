@@ -1,0 +1,12 @@
+{
+  "text": "### Refactored Code\n\nBased on the provided plan, I will refactor the code into production-ready Python modules. Here is the generated code:\n\n```json\n{\n  \"src_pkg/main.py\": \"\n# pylint: disable=no-name-in-module\nfrom typing import Any\n\ndef init_vars(cfg: Any) -> None:\n    \"\"\"\n    Initialize variables.\n\n    Args:\n        cfg (Any): Configuration object.\n    \"\"\"\n    x = cfg.x\n\ndef print_hello() -> None:\n    \"\"\"\n    Print a hello message.\n    \"\"\"\n    print('hi')\n\",\n  \"tests/test_module.py\": \"\nimport unittest\nfrom src_pkg.main import init_vars, print_hello\n\nclass TestModule(unittest.TestCase):\n    def test_init_vars(self) -> None:\n        \"\"\"\n        Test init_vars function.\n        \"\"\"\n        # Mock configuration object\n        class Config:\n            x = 1\n        init_vars(Config())\n\n    def test_print_hello(self) -> None:\n        \"\"\"\n        Test print_hello function.\n        \"\"\"\n        print_hello()\n\"\n}\n```\n\n### Explanation\n\n*   The `init_vars` function is defined in `src_pkg/main.py` with a type hint for the `cfg` parameter and a docstring explaining its purpose.\n*   The `print_hello` function is also defined in `src_pkg/main.py` with a docstring.\n*   In `tests/test_module.py`, test cases are created for both functions using the `unittest` framework.\n*   The `init_vars` function is tested by creating a mock configuration object and passing it to the function.\n*   The `print_hello` function is tested by simply calling it.\n\n### Notes\n\n*   The `cfg` object is assumed to be a configuration object that contains the necessary variables, such as `x`. In a real-world scenario, this object would be created using a configuration management system like Hydra.\n*   The `Any` type hint is used for the `cfg` parameter, as the actual type of the configuration object is not specified. In a real-world scenario, you would replace `Any` with the actual type of the configuration object.\n*   The `pylint: disable=no-name-in-module` comment is used to disable a pylint warning that might be triggered by the `cfg` object not being defined in the module.",
+  "meta": {
+    "id": "chatcmpl-fba1b24a-51da-48ac-94d5-0d69c75283ee",
+    "model": "llama-3.3-70b-versatile",
+    "usage": {
+      "prompt_tokens": 233,
+      "completion_tokens": 468,
+      "total_tokens": 701
+    }
+  }
+}

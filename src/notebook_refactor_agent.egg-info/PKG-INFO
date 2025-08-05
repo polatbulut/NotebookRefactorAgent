@@ -35,7 +35,8 @@ Requires-Dist: radon; extra == "dev"
 Requires-Dist: pre-commit; extra == "dev"
 Requires-Dist: types-PyYAML; extra == "dev"
 Provides-Extra: agents
-Requires-Dist: openai>=1.0.0; extra == "agents"
+Requires-Dist: groq>=0.9.0; extra == "agents"
+Requires-Dist: requests>=2.31.0; extra == "agents"
 Requires-Dist: langchain>=0.2.0; extra == "agents"
 
 # NotebookRefactorAgent
