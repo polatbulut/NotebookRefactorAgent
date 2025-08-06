@@ -1,4 +1,4 @@
-Usage: black [OPTIONS] SRC ...
-Try 'black -h' for help.
+would reformat /Users/polatbulut/Documents/Computer Science/Projects/NotebookRefactorAgent/out_pkg_llm/tests/test_module.py
 
-Error: Invalid value for 'SRC ...': Path 'out_pkg_llm' does not exist.
+Oh no! 💥 💔 💥
+1 file would be reformatted, 1 file would be left unchanged.

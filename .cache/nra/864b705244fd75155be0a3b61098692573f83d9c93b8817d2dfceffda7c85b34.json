@@ -1,0 +1,12 @@
+{
+  "text": "```json\n{\n  \"modules\": [\"main\"],\n  \"cell_map\": {\n    \"80573d09\": \"main\",\n    \"3e720959\": \"main\",\n    \"119c3ca5\": \"main\",\n    \"d95dc796\": \"main\"\n  },\n  \"configs\": {},\n  \"api\": [\"GET /\"],\n  \"cli\": [\"python main.py\"]\n}\n```",
+  "meta": {
+    "id": "chatcmpl-9e7a3b3b-3e24-4708-af4f-5b31efff121e",
+    "model": "llama-3.3-70b-versatile",
+    "usage": {
+      "prompt_tokens": 222,
+      "completion_tokens": 85,
+      "total_tokens": 307
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "text": "```json\n{\n  \"tests/test_module.py\": \"\nimport unittest\nfrom src_pkg.module import import_func, parse, title, links, years, raw_years, check_year, non_numeric_years, clean_years, year_freq\n\nclass TestModuleFunctions(unittest.TestCase):\n\n  def test_import(self):\n    # Test import function\n    self.assertTrue(import_func())\n\n  def test_parse(self):\n    # Test parse function\n    self.assertIsNotNone(parse())\n\n  def test_title(self):\n    # Test title function\n    self.assertIsNotNone(title())\n\n  def test_links(self):\n    # Test links function\n    self.assertIsNotNone(links())\n\n  def test_years(self):\n    # Test years function\n    self.assertIsNotNone(years())\n\n  def test_raw_years(self):\n    # Test raw_years function\n    self.assertIsNotNone(raw_years())\n\n  def test_check_year(self):\n    # Test check_year function\n    self.assertTrue(check_year(2022))\n\n  def test_non_numeric_years(self):\n    # Test non_numeric_years function\n    self.assertIsNotNone(non_numeric_years())\n\n  def test_clean_years(self):\n    # Test clean_years function\n    self.assertIsNotNone(clean_years())\n\n  def test_year_freq(self):\n    # Test year_freq function\n    self.assertIsNotNone(year_freq())\n\nif __name__ == '__main__':\n  unittest.main()\n\"\n}\n```",
+  "meta": {
+    "id": "chatcmpl-9e9dedf6-1c14-4b49-87c1-67716f70f365",
+    "model": "llama-3.3-70b-versatile",
+    "usage": {
+      "prompt_tokens": 221,
+      "completion_tokens": 271,
+      "total_tokens": 492
+    }
+  }
+}

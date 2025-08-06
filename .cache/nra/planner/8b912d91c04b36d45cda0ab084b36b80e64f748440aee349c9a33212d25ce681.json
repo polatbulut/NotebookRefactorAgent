@@ -1,0 +1,12 @@
+{
+  "text": "```json\n{\n  \"modules\": [\n    \"requests\",\n    \"bs4\"\n  ],\n  \"cell_map\": {\n    \"3\": \"import\",\n    \"5\": \"parse_html\",\n    \"7\": \"title\",\n    \"9\": \"links\",\n    \"11\": \"years\",\n    \"13\": \"raw_years\",\n    \"15\": \"year_check\",\n    \"17\": \"non_numeric_years\",\n    \"19\": \"year_list\",\n    \"20\": \"year_frequency\",\n    \"21\": \"empty\"\n  },\n  \"configs\": {\n    \"url\": \"http://www.imdb.com/name/nm0000821\",\n    \"parser\": \"html.parser\"\n  },\n  \"api\": [\n    \"GET /imdb/name/{name}\",\n    \"GET /imdb/name/{name}/filmography\"\n  ],\n  \"cli\": [\n    \"python script.py --name Amitabh_Bachchan\",\n    \"python script.py --url http://www.imdb.com/name/nm0000821\"\n  ]\n}\n```",
+  "meta": {
+    "id": "chatcmpl-a0fd5ae4-a8c0-4feb-9dc7-fbd69c26f697",
+    "model": "llama-3.3-70b-versatile",
+    "usage": {
+      "prompt_tokens": 499,
+      "completion_tokens": 218,
+      "total_tokens": 717
+    }
+  }
+}

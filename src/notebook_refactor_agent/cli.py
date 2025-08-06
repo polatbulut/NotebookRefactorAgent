@@ -59,6 +59,17 @@ def _load_cfg() -> dict[str, Any]:
     return {}
 
 
+def _plan_value(plan: Any, key: str, default: str) -> str:
+    """Return a plan field from Plan dataclass or dict, with a default."""
+    if isinstance(plan, dict):
+        return str(plan.get(key, default))
+    try:
+        val = getattr(plan, key, None)
+        return str(val) if val else default
+    except Exception:
+        return default
+
+
 def _tokens_from_meta(meta: dict[str, Any]) -> tuple[int, int, int]:
     """Return (prompt, completion, total) tokens from a provider meta payload."""
     usage = cast(dict[str, Any], meta.get("usage", {}) or {})
@@ -121,9 +132,9 @@ def refactor_cmd(
     metrics = final_state.get("metrics", {}) or {}
     typer.echo(report)
     if verbose:
-        plan = final_state.get("plan", {}) or {}
-        module_rel = plan.get("module_path", "src_pkg/module.py")
-        tests_rel = plan.get("tests_path", "tests/test_module.py")
+        plan_any: Any = final_state.get("plan", None)
+        module_rel = _plan_value(plan_any, "module_path", "src_pkg/module.py")
+        tests_rel = _plan_value(plan_any, "tests_path", "tests/test_module.py")
         reports_dir = (Path(output_dir) / ".reports").resolve()
         typer.echo(f"Module:  {(Path(output_dir) / module_rel).resolve()}")
         typer.echo(f"Tests:   {(Path(output_dir) / tests_rel).resolve()}")

@@ -1,0 +1,12 @@
+{
+  "text": "```json\n{\n  \"tests/test_module.py\": \"\"\"\nimport unittest\nfrom unittest.mock import Mock, patch\nfrom src_pkg.module import *\n\nclass TestModuleFunctions(unittest.TestCase):\n\n  def test_module_functions(self):\n    # Add test cases for functions in module.py\n    pass\n\nif __name__ == '__main__':\n  unittest.main()\n\"\"\"\n}\n```",
+  "meta": {
+    "id": "chatcmpl-935891a1-a2f8-438d-93ba-64c103beb658",
+    "model": "llama-3.3-70b-versatile",
+    "usage": {
+      "prompt_tokens": 95,
+      "completion_tokens": 73,
+      "total_tokens": 168
+    }
+  }
+}

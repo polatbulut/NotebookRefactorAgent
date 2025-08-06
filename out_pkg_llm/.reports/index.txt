@@ -1,9 +1,9 @@
 Notebook Refactor Agent Report
 
-Summary: pytest=4 ruff=1 black=2 mypy=2 exec=1 secs=0.03
+Summary: pytest=0 ruff=0 black=1 mypy=0 exec=0 secs=0.02
 
 Generated
-- module: /Users/polatbulut/Documents/Computer Science/Projects/NotebookRefactorAgent/out_pkg_llm/src_pkg/main.py
+- module: /Users/polatbulut/Documents/Computer Science/Projects/NotebookRefactorAgent/out_pkg_llm/src_pkg/module.py
 - tests:  /Users/polatbulut/Documents/Computer Science/Projects/NotebookRefactorAgent/out_pkg_llm/tests/test_module.py
 
 Reports
