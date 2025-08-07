@@ -9,14 +9,14 @@ import time
 from types import ModuleType
 from typing import Any
 
+from ...plan import Plan
+
 try:
     import resource as _resource
 
     res: ModuleType | None = _resource
 except Exception:
     res = None
-
-from ...plan import Plan
 
 
 def _run(cmd: list[str], cwd: Path) -> dict[str, Any]:
@@ -25,7 +25,6 @@ def _run(cmd: list[str], cwd: Path) -> dict[str, Any]:
 
 
 def _get_plan_value(plan: Any, key: str, default: str) -> str:
-    """Return a plan field from a Plan dataclass or dict, with a default."""
     if isinstance(plan, Plan):
         val = getattr(plan, key, None)
         return str(val) if val else default

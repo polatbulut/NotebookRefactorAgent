@@ -1,0 +1,12 @@
+{
+  "text": "```json\n{\n  \"modules\": [\n    \"requests\",\n    \"bs4\"\n  ],\n  \"cell_map\": {\n    \"0\": \"import_module\",\n    \"1\": \"parse_html\",\n    \"2\": \"get_title\",\n    \"3\": \"count_links\",\n    \"4\": \"count_years\",\n    \"5\": \"extract_years\",\n    \"6\": \"check_year\",\n    \"7\": \"filter_non_numeric_years\",\n    \"8\": \"filter_numeric_years_and_join\",\n    \"9\": \"count_year_frequency\"\n  },\n  \"configs\": {\n    \"url\": \"http://www.imdb.com/name/nm0000821\",\n    \"parser\": \"html.parser\"\n  },\n  \"api\": [\n    {\n      \"endpoint\": \"/title\",\n      \"method\": \"GET\",\n      \"description\": \"Get the title of the webpage\"\n    },\n    {\n      \"endpoint\": \"/links\",\n      \"method\": \"GET\",\n      \"description\": \"Get the number of links on the webpage\"\n    },\n    {\n      \"endpoint\": \"/years\",\n      \"method\": \"GET\",\n      \"description\": \"Get the number of years on the webpage\"\n    },\n    {\n      \"endpoint\": \"/year-list\",\n      \"method\": \"GET\",\n      \"description\": \"Get the list of years on the webpage\"\n    },\n    {\n      \"endpoint\": \"/year-frequency\",\n      \"method\": \"GET\",\n      \"description\": \"Get the frequency of each year on the webpage\"\n    }\n  ],\n  \"cli\": [\n    {\n      \"command\": \"get-title\",\n      \"description\": \"Get the title of the webpage\"\n    },\n    {\n      \"command\": \"count-links\",\n      \"description\": \"Get the number of links on the webpage\"\n    },\n    {\n      \"command\": \"count-years\",\n      \"description\": \"Get the number of years on the webpage\"\n    },\n    {\n      \"command\": \"get-year-list\",\n      \"description\": \"Get the list of years on the webpage\"\n    },\n    {\n      \"command\": \"get-year-frequency\",\n      \"description\": \"Get the frequency of each year on the webpage\"\n    }\n  ]\n}\n```",
+  "meta": {
+    "id": "chatcmpl-1ba70295-7c92-43c0-a9be-c95eb1c56105",
+    "model": "llama-3.3-70b-versatile",
+    "usage": {
+      "prompt_tokens": 628,
+      "completion_tokens": 456,
+      "total_tokens": 1084
+    }
+  }
+}

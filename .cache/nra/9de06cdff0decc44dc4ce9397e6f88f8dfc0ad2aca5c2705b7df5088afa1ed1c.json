@@ -1,0 +1,12 @@
+{
+  "text": "{\"package_root\": \"imdb_scraper\", \"module_path\": \"imdb_scraper/scraper.py\", \"tests_path\": \"imdb_scraper/tests/test_scraper.py\", \"cell_map\": {\"0\": \"import_requests\", \"1\": \"parse_webpage\", \"2\": \"get_title\", \"3\": \"count_links\", \"4\": \"count_movies\", \"5\": \"extract_years\", \"6\": \"check_year\", \"7\": \"filter_non_numeric_years\", \"8\": \"format_years\", \"9\": \"count_year_frequency\"}}",
+  "meta": {
+    "id": "chatcmpl-a8222809-a9a7-4d3a-a7fa-2b35f4f7cdba",
+    "model": "llama-3.3-70b-versatile",
+    "usage": {
+      "prompt_tokens": 651,
+      "completion_tokens": 118,
+      "total_tokens": 769
+    }
+  }
+}

@@ -20,6 +20,7 @@ dist/
 pip-wheel-metadata/
 
 out_pkg/
+out_pkg_llm/
 eval_runs/
 out/
 .out/
