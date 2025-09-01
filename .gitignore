@@ -22,6 +22,7 @@ pip-wheel-metadata/
 
 out_pkg/
 out_pkg_llm/
+out_pkg_llm_test/
 eval_runs/
 out/
 .out/
